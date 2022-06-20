@@ -1,0 +1,37 @@
+name: Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        type: string
+        required: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout kernel source
+      uses: actions/checkout@v2
+        
+    - name: Checkout zipper
+      uses: actions/checkout@v2
+      with:
+        repository: lemniskett/AnyKernel3
+        path: zipper
+    - name: fix error
+      run: |
+        git config --global --add safe.directory /github/workspace
+    - name: Android kernel build
+      uses: lemniskett/android-kernel-actions@master
+      id: build
+      env:
+        NAME: Xs
+      with:
+        arch: arm64
+        compiler: gcc/10
+        defconfig: grus_defconfig
+        image: Image.gz-dtb
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v2.2.4
+      with:
+        path: ${{ steps.build.outputs.outfile }}
